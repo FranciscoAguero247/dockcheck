@@ -11,7 +11,6 @@ export interface Vendor {
 export interface Shipment {
   id: string;
   vendor_id: string;
-  vendor?: Vendor;
   reference_number: string;
   trailer_number: string;
   scheduled_arrival: string;
@@ -22,6 +21,10 @@ export interface Shipment {
   updated_at?: string;
 }
 
+export interface ShipmentWithVendor extends Shipment {
+  vendor?: Vendor;
+}
+
 export interface LineItem {
   id: string;
   shipment_id: string;
@@ -30,12 +33,13 @@ export interface LineItem {
   expected_qty: number;
   received_qty: number;
   is_verified: boolean;
+  created_at?: string;
 }
 
 export interface Discrepancy {
   id: string;
   shipment_id: string;
-  line_item_id: string;
+  line_item_id?: string | null;
   type: DiscrepancyType;
   affected_qty: number;
   notes: string | null;

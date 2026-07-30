@@ -2,17 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Shipment } from '@/types/database';
+import { ShipmentWithVendor } from '@/types/database';
 
-export function useShipments() {
-  const [shipments, setShipments] = useState<Shipment[]>([]);
+interface ShipmentFilters {
+  status?: string;
+  date?: string;
+}
+
+export function useShipments(filters: ShipmentFilters = {}) {
+  const [shipments, setShipments] = useState<ShipmentWithVendor[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. Initial Fetch
+    let isMounted = true;
+
     async function fetchShipments() {
-      const { data, error } = await supabase
+      setLoading(true);
+      setError(null);
+
+      let query = supabase
         .from('shipments')
         .select(`
           *,
@@ -20,40 +29,56 @@ export function useShipments() {
         `)
         .order('scheduled_arrival', { ascending: true });
 
+      if (filters.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters.date) {
+        const selectedDate = new Date(filters.date);
+        const start = new Date(selectedDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(selectedDate);
+        end.setHours(23, 59, 59, 999);
+
+        query = query.gte('scheduled_arrival', start.toISOString()).lte('scheduled_arrival', end.toISOString());
+      }
+
+      const { data, error } = await query;
+
+      if (!isMounted) {
+        return;
+      }
+
       if (error) {
         setError(error.message);
+        setShipments([]);
       } else {
-        setShipments(data || []);
+        setShipments((data as ShipmentWithVendor[]) || []);
       }
+
       setLoading(false);
     }
 
-    fetchShipments();
+    void fetchShipments();
 
-    // 2. Supabase Realtime Subscription
     const channel = supabase
       .channel('public:shipments')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'shipments' },
-        (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setShipments((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id ? { ...item, ...payload.new } : item
-              )
-            );
-          } else if (payload.eventType === 'INSERT') {
-            fetchShipments(); // Refetch to get vendor relation
+        () => {
+          if (isMounted) {
+            void fetchShipments();
           }
         }
       )
       .subscribe();
 
     return () => {
+      isMounted = false;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [filters.date, filters.status]);
 
   return { shipments, loading, error };
 }

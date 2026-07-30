@@ -1,11 +1,11 @@
 'use client';
 
-import { Shipment } from '@/types/database';
+import { ShipmentWithVendor } from '@/types/database';
 import { StatusBadge } from './StatusBadge';
 import { Truck, Package, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-export function ShipmentCard({ shipment }: { shipment: Shipment }) {
+export function ShipmentCard({ shipment }: { shipment: ShipmentWithVendor }) {
   const arrivalTime = new Date(shipment.scheduled_arrival).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',

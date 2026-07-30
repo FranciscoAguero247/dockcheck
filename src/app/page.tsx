@@ -3,18 +3,17 @@
 import { useState } from 'react';
 import { useShipments } from '@/hooks/useShipments';
 import { ShipmentCard } from '@/components/dock/ShipmentCard';
-import { ShipmentStatus } from '@/types/database';
-import { Filter, Layers, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw } from 'lucide-react';
 
 export default function DockBoardPage() {
-  const { shipments, loading, error } = useShipments();
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('');
 
-  const filteredShipments = shipments.filter((s) =>
-    statusFilter === 'all' ? true : s.status === statusFilter
-  );
+  const { shipments, loading, error } = useShipments({
+    status: statusFilter,
+    date: dateFilter,
+  });
 
-  // Metrics summary calculation
   const totalCount = shipments.length;
   const receivingCount = shipments.filter((s) => s.status === 'receiving').length;
   const verifiedCount = shipments.filter((s) => s.status === 'verified').length;
@@ -53,22 +52,45 @@ export default function DockBoardPage() {
           </p>
         </div>
 
-        {/* Filter Controls */}
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-          <Filter className="w-4 h-4 text-slate-400 ml-2 shrink-0" />
-          {['all', 'expected', 'receiving', 'verified', 'discrepancy'].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-colors ${
-                statusFilter === status
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row items-stretch gap-2">
+          <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+            <Filter className="w-4 h-4 text-slate-400 ml-2 shrink-0" />
+            {['all', 'expected', 'receiving', 'verified', 'discrepancy'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-colors ${
+                  statusFilter === status
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+
+          <label className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-600">
+            <CalendarDays className="w-4 h-4 text-slate-400" />
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(event) => setDateFilter(event.target.value)}
+              className="bg-transparent outline-none text-sm text-slate-700"
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter('all');
+              setDateFilter('');
+            }}
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </button>
         </div>
       </header>
 
@@ -116,13 +138,13 @@ export default function DockBoardPage() {
       </section>
 
       {/* Shipments Grid */}
-      {filteredShipments.length === 0 ? (
+      {shipments.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
           <p className="text-slate-500 font-medium">No shipments match the selected filter.</p>
         </div>
       ) : (
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredShipments.map((shipment) => (
+          {shipments.map((shipment) => (
             <ShipmentCard key={shipment.id} shipment={shipment} />
           ))}
         </section>
