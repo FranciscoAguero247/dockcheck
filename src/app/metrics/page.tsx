@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BarChart3, CalendarDays, Printer } from 'lucide-react';
-import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
+import { ArrowLeft, BarChart3, CalendarDays, Printer, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface MetricsPayload {
   accuracySeries: Array<{ day: string; accuracy: number; verified: number; total: number }>;
@@ -87,53 +87,72 @@ export default function MetricsPage() {
         </div>
 
         <section className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Accuracy rate</p>
-            <p className="mt-2 text-3xl font-black text-slate-900">{summary.accuracy}%</p>
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 to-slate-700 p-4 text-white shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-300">Accuracy rate</p>
+              <TrendingUp className="w-4 h-4 text-slate-300" />
+            </div>
+            <p className="mt-3 text-3xl font-black">{summary.accuracy}%</p>
+            <p className="mt-1 text-sm text-slate-300">Average match rate across the selected window</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Verified shipments</p>
-            <p className="mt-2 text-3xl font-black text-slate-900">{summary.verified}</p>
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-emerald-700">Verified shipments</p>
+              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+            </div>
+            <p className="mt-3 text-3xl font-black text-emerald-900">{summary.verified}</p>
+            <p className="mt-1 text-sm text-emerald-700">Closed out successfully in this period</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Discrepancies logged</p>
-            <p className="mt-2 text-3xl font-black text-slate-900">{summary.discrepancies}</p>
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-rose-700">Discrepancies logged</p>
+              <AlertTriangle className="w-4 h-4 text-rose-700" />
+            </div>
+            <p className="mt-3 text-3xl font-black text-rose-900">{summary.discrepancies}</p>
+            <p className="mt-1 text-sm text-rose-700">Follow-up items that need attention</p>
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-slate-500" />
-              <h2 className="text-base font-semibold text-slate-900">Accuracy over time</h2>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-slate-500" />
+                <h2 className="text-base font-semibold text-slate-900">Accuracy over time</h2>
+              </div>
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">Trend</span>
             </div>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={payload?.accuracySeries ?? []}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="accuracy" fill="#0f172a" radius={[6, 6, 0, 0]} />
+                <BarChart data={payload?.accuracySeries ?? []} barGap={8}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: '#f8fafc' }} />
+                  <Bar dataKey="accuracy" fill="#0f172a" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-slate-500" />
-              <h2 className="text-base font-semibold text-slate-900">Discrepancies by vendor</h2>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-slate-500" />
+                <h2 className="text-base font-semibold text-slate-900">Discrepancies by vendor</h2>
+              </div>
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">Share</span>
             </div>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={payload?.discrepanciesByVendor ?? []} dataKey="value" nameKey="name" outerRadius={90} innerRadius={50}>
+                  <Pie data={payload?.discrepanciesByVendor ?? []} dataKey="value" nameKey="name" outerRadius={92} innerRadius={56} paddingAngle={2}>
                     {(payload?.discrepanciesByVendor ?? []).map((entry, index) => (
                       <Cell key={entry.name} fill={palette[index % palette.length]} />
                     ))}
                   </Pie>
                   <Tooltip />
+                  <Legend verticalAlign="bottom" height={36} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -143,14 +162,14 @@ export default function MetricsPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm print:bg-white">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-slate-900">End-of-shift summary</h2>
-            <span className="text-xs uppercase tracking-[0.2em] text-slate-500">Printable</span>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">Printable</span>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold text-slate-900">Verified shipments per day</p>
               <ul className="mt-3 space-y-2 text-sm text-slate-600">
                 {(payload?.verifiedPerDay ?? []).map((item) => (
-                  <li key={item.day} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+                  <li key={item.day} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
                     <span>{item.day}</span>
                     <span className="font-semibold text-slate-900">{item.verified}/{item.total}</span>
                   </li>
@@ -161,7 +180,7 @@ export default function MetricsPage() {
               <p className="text-sm font-semibold text-slate-900">Discrepancy breakdown</p>
               <ul className="mt-3 space-y-2 text-sm text-slate-600">
                 {(payload?.discrepanciesByType ?? []).map((item) => (
-                  <li key={item.name} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+                  <li key={item.name} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
                     <span className="capitalize">{item.name}</span>
                     <span className="font-semibold text-slate-900">{item.value}</span>
                   </li>
