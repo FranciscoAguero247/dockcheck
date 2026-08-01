@@ -12,7 +12,7 @@ export function ShipmentCard({ shipment }: { shipment: ShipmentWithVendor }) {
   });
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+    <article className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
       <div>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
@@ -44,11 +44,11 @@ export function ShipmentCard({ shipment }: { shipment: ShipmentWithVendor }) {
 
       <Link
         href={`/receiving/${shipment.id}`}
-        className="w-full mt-2 py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors active:scale-[0.99]"
+        className="w-full mt-2 py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
       >
         <span>Open Receiving Flow</span>
         <ArrowRight className="w-4 h-4" />
       </Link>
-    </div>
+    </article>
   );
 }

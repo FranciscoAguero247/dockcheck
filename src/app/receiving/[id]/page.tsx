@@ -146,10 +146,11 @@ export default function ShipmentDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-600 font-medium">Starting receiving flow...</p>
+      <main className="min-h-screen bg-slate-50 p-4 md:p-8" aria-busy="true">
+        <div className="mx-auto max-w-5xl space-y-4">
+          <div className="h-20 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div className="h-40 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div className="h-56 animate-pulse rounded-2xl border border-slate-200 bg-white" />
         </div>
       </main>
     );
@@ -162,8 +163,8 @@ export default function ShipmentDetailPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Dock Board
         </Link>
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">
-          Shipment not found.
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600" role="status">
+          Shipment not found. Return to the dock board and try another trailer.
         </div>
       </main>
     );
@@ -236,10 +237,12 @@ export default function ShipmentDetailPage() {
                         render={({ field }) => (
                           <input
                             type="number"
+                            inputMode="numeric"
                             min="0"
+                            aria-label={`Count for ${item.sku}`}
                             value={field.value ?? 0}
                             onChange={(event) => field.onChange(Number(event.target.value))}
-                            className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none"
+                            className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
                           />
                         )}
                       />
@@ -286,7 +289,7 @@ export default function ShipmentDetailPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
           >
             <Send className="w-4 h-4" />
             {submitting ? 'Saving receiving results...' : 'Complete check-in'}

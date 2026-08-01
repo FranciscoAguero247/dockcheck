@@ -21,12 +21,21 @@ export default function DockBoardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-600 font-medium">Connecting to Dock Feed...</p>
+      <main className="min-h-screen bg-slate-50 p-4 md:p-8" aria-busy="true">
+        <div className="mx-auto max-w-7xl space-y-4">
+          <div className="h-28 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+            ))}
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-56 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+            ))}
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -53,7 +62,7 @@ export default function DockBoardPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch gap-2">
-          <a href="/metrics" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
+          <a href="/metrics" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
             <BarChart3 className="w-4 h-4" />
             Metrics
           </a>
@@ -62,8 +71,10 @@ export default function DockBoardPage() {
             {['all', 'expected', 'receiving', 'verified', 'discrepancy'].map((status) => (
               <button
                 key={status}
+                type="button"
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-colors ${
+                aria-pressed={statusFilter === status}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-colors min-h-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 ${
                   statusFilter === status
                     ? 'bg-slate-900 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
@@ -81,6 +92,7 @@ export default function DockBoardPage() {
               value={dateFilter}
               onChange={(event) => setDateFilter(event.target.value)}
               className="bg-transparent outline-none text-sm text-slate-700"
+              aria-label="Filter by arrival date"
             />
           </label>
 
@@ -90,7 +102,7 @@ export default function DockBoardPage() {
               setStatusFilter('all');
               setDateFilter('');
             }}
-            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
@@ -143,8 +155,9 @@ export default function DockBoardPage() {
 
       {/* Shipments Grid */}
       {shipments.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
-          <p className="text-slate-500 font-medium">No shipments match the selected filter.</p>
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm" role="status">
+          <p className="text-lg font-semibold text-slate-900">No shipments match the selected filter.</p>
+          <p className="mt-2 text-sm text-slate-600">Try widening the date range or switching back to the full dock board.</p>
         </div>
       ) : (
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
