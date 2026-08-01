@@ -59,6 +59,17 @@ export default function MetricsPage() {
     };
   }, [payload]);
 
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-4 md:p-8">
+        <div className="mx-auto max-w-7xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <p className="text-lg font-semibold text-slate-900">Loading metrics…</p>
+          <p className="mt-2 text-sm text-slate-600">Collecting receiving performance data for the selected range.</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-4">

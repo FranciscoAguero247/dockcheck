@@ -2,6 +2,8 @@
 
 DockCheck is a Next.js App Router dashboard for live dock receiving operations. It reads shipments from Supabase, shows a live dock board, supports status/date filtering, and includes detail pages for receiving workflow review.
 
+[![CI](https://github.com/francisco-aguero/dockcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/francisco-aguero/dockcheck/actions/workflows/ci.yml)
+
 ## Features
 
 - Real-time dock board cards with vendor, reference, arrival time, expected counts, and status chips
@@ -15,18 +17,30 @@ DockCheck is a Next.js App Router dashboard for live dock receiving operations. 
    ```bash
    npm install
    ```
-2. Create a Supabase project and add the following environment variables to `.env.local`:
+2. Run tests:
+   ```bash
+   npm test
+   ```
+3. Run linting:
+   ```bash
+   npm run lint
+   ```
+4. Create a production build:
+   ```bash
+   npm run build
+   ```
+5. Create a Supabase project and add the following environment variables to `.env.local`:
    ```bash
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
-3. Apply the schema from [scripts/schema.sql](scripts/schema.sql) in the Supabase SQL editor.
-4. Seed the data:
+6. Apply the schema from [scripts/schema.sql](scripts/schema.sql) in the Supabase SQL editor.
+7. Seed the data:
    ```bash
    node scripts/seed.mjs
    ```
-5. Start the app:
+8. Start the app:
    ```bash
    npm run dev
    ```
