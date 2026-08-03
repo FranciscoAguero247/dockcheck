@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { supabase } from '@/lib/supabase';
+import { filterDiscrepancies } from '@/lib/discrepancies';
 import { ShipmentWithVendor, LineItem, Discrepancy, DiscrepancyType } from '@/types/database';
-import { ArrowLeft, Package, Truck, Clock3, AlertTriangle, CheckCircle2, PlusCircle, Send } from 'lucide-react';
+import { ArrowLeft, Package, Truck, Clock3, AlertTriangle, CheckCircle2, PlusCircle, Send, Search } from 'lucide-react';
 
 interface LineFormValues {
   counted: number;
@@ -32,6 +33,8 @@ export default function ShipmentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [receiverFilter, setReceiverFilter] = useState('');
 
   const { control, handleSubmit, reset } = useForm<ReceivingFormValues>({
     defaultValues: {
@@ -48,6 +51,11 @@ export default function ShipmentDetailPage() {
         return item.expected_qty !== counted;
       }).length,
     [lineItems, watchedLines]
+  );
+
+  const visibleDiscrepancies = useMemo(
+    () => filterDiscrepancies(discrepancies, { type: typeFilter === 'all' ? '' : typeFilter, receiver: receiverFilter }),
+    [discrepancies, receiverFilter, typeFilter]
   );
 
   useEffect(() => {
@@ -269,10 +277,37 @@ export default function ShipmentDetailPage() {
               Discrepancy log
             </div>
             <p className="mt-1 text-xs text-slate-500">Any mismatch opens a discrepancy entry automatically and stores it with the receiver name.</p>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr]">
+              <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                <Search className="w-4 h-4 text-slate-400" />
+                <input
+                  value={receiverFilter}
+                  onChange={(event) => setReceiverFilter(event.target.value)}
+                  placeholder="Filter by receiver"
+                  className="w-full bg-transparent outline-none"
+                />
+              </label>
+              <select
+                value={typeFilter}
+                onChange={(event) => setTypeFilter(event.target.value)}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none"
+              >
+                <option value="all">All types</option>
+                <option value="shortage">Shortage</option>
+                <option value="overage">Overage</option>
+                <option value="damage">Damage</option>
+                <option value="mislabel">Mislabel</option>
+              </select>
+            </div>
+
             <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
-              {discrepancies.length === 0 ? 'No discrepancies yet.' : discrepancies.map((item) => (
+              {visibleDiscrepancies.length === 0 ? 'No discrepancies match the current filters.' : visibleDiscrepancies.map((item) => (
                 <div key={item.id} className="mt-2 rounded-lg border border-rose-200 bg-white p-2">
-                  <p className="font-semibold text-rose-700">{item.type}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-rose-700 capitalize">{item.type}</p>
+                    <span className="text-[11px] uppercase tracking-[0.2em] text-slate-500">{item.receiver_name}</span>
+                  </div>
                   <p className="text-xs text-slate-600">{item.notes || 'No note supplied.'}</p>
                   <p className="mt-1 text-[11px] text-slate-500">Qty: {item.affected_qty} • Receiver: {item.receiver_name}</p>
                 </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
+import { buildLineItemUpdates } from '@/lib/receiving';
 
 export async function POST(
   request: NextRequest,
@@ -20,11 +21,7 @@ export async function POST(
       return NextResponse.json({ error: lineItemsError.message }, { status: 500 });
     }
 
-    const updates = body.lines.map((line: { id: string; counted: number }) => ({
-      id: line.id,
-      received_qty: line.counted,
-      is_verified: line.counted === lineItems.find((item) => item.id === line.id)?.expected_qty,
-    }));
+    const updates = buildLineItemUpdates(id, lineItems, body.lines);
 
     const { error: updateError } = await supabase.from('line_items').upsert(updates);
     if (updateError) {

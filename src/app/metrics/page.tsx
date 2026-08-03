@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BarChart3, CalendarDays, Printer, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell, Legend } from 'recharts';
+import { supabase } from '@/lib/supabase';
 
 interface MetricsPayload {
   accuracySeries: Array<{ day: string; accuracy: number; verified: number; total: number }>;
@@ -21,6 +22,8 @@ export default function MetricsPage() {
   const [range, setRange] = useState('7d');
 
   useEffect(() => {
+    let isMounted = true;
+
     async function loadMetrics() {
       setLoading(true);
       const params = new URLSearchParams();
@@ -40,11 +43,32 @@ export default function MetricsPage() {
 
       const response = await fetch(`/api/metrics?${params.toString()}`);
       const data = await response.json();
-      setPayload(data);
-      setLoading(false);
+      if (isMounted) {
+        setPayload(data);
+        setLoading(false);
+      }
     }
 
     void loadMetrics();
+
+    const channel = supabase
+      .channel('public:metrics-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shipments' }, () => {
+        if (isMounted) {
+          void loadMetrics();
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'discrepancies' }, () => {
+        if (isMounted) {
+          void loadMetrics();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
   }, [range]);
 
   const summary = useMemo(() => {
