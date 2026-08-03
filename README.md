@@ -15,8 +15,8 @@ The people who feel this most are:
 
 ## Screenshots
 
-- Dock board overview: [public/screenshots/dock-board.svg](public/screenshots/dock-board.svg)
-- Receiving flow: [public/screenshots/receiving-flow.svg](public/screenshots/receiving-flow.svg)
+- Dock board overview: [public/screenshots/dock-board.svg](public/screenshots/dock-board.png)
+- Receiving flow: [public/screenshots/receiving-flow.svg](public/screenshots/receiving-flow.png)
 
 ## What it does
 
