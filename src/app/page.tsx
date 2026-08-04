@@ -50,7 +50,6 @@ export default function DockBoardPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 p-4 md:p-8 max-w-7xl mx-auto">
-      {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
@@ -110,7 +109,6 @@ export default function DockBoardPage() {
         </div>
       </header>
 
-      {/* Metrics Row */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
           <div className="p-2.5 bg-slate-100 text-slate-700 rounded-lg">
@@ -153,7 +151,6 @@ export default function DockBoardPage() {
         </div>
       </section>
 
-      {/* Shipments Grid */}
       {shipments.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm" role="status">
           <p className="text-lg font-semibold text-slate-900">No shipments match the selected filter.</p>

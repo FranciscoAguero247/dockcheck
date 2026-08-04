@@ -1,4 +1,3 @@
-// src/components/receiving/DiscrepancyPhotoUpload.tsx
 'use client';
 
 import { useState, useEffect } from 'react';

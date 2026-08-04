@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { filterDiscrepancies } from '@/lib/discrepancies';
 import { ShipmentWithVendor, LineItem, Discrepancy, DiscrepancyType } from '@/types/database';
 import { ArrowLeft, Package, Truck, Clock3, AlertTriangle, CheckCircle2, PlusCircle, Send, Search } from 'lucide-react';
+import { DiscrepancyPhotoUpload } from '@/components/receiving/DiscrepancyPhotoUpload';
 
 interface LineFormValues {
   counted: number;
@@ -35,6 +36,7 @@ export default function ShipmentDetailPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState('all');
   const [receiverFilter, setReceiverFilter] = useState('');
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null); // State to store uploaded photo URL if needed
 
   const { control, handleSubmit, reset } = useForm<ReceivingFormValues>({
     defaultValues: {
@@ -128,7 +130,11 @@ export default function ShipmentDetailPage() {
     const response = await fetch(`/api/receiving/${params.id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lines: Object.entries(values.lines).map(([id, value]) => ({ id, counted: Number(value.counted) })), discrepancies: discrepancyEntries }),
+      body: JSON.stringify({ 
+        lines: Object.entries(values.lines).map(([id, value]) => ({ id, counted: Number(value.counted) })), 
+        discrepancies: discrepancyEntries,
+        photoUrl: uploadedPhotoUrl // Optional: pass along the photo URL if your backend API accepts it
+      }),
     });
 
     const payload = await response.json();
@@ -274,11 +280,20 @@ export default function ShipmentDetailPage() {
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <PlusCircle className="w-4 h-4 text-slate-500" />
-              Discrepancy log
+              Discrepancy log & Documentation
             </div>
-            <p className="mt-1 text-xs text-slate-500">Any mismatch opens a discrepancy entry automatically and stores it with the receiver name.</p>
+            <p className="mt-1 text-xs text-slate-500">Any mismatch opens a discrepancy entry automatically. Attach optional photographic evidence below.</p>
 
-            <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr]">
+            <div className="mt-4">
+              <DiscrepancyPhotoUpload 
+                shipmentId={shipment.id} 
+                onPhotoUploaded={(url) => {
+                  setUploadedPhotoUrl(url);
+                }} 
+              />
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr]">
               <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
                 <Search className="w-4 h-4 text-slate-400" />
                 <input
