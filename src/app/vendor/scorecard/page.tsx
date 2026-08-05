@@ -35,16 +35,6 @@ export default function VendorScorecardPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-8 max-w-6xl mx-auto">
-      <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 mb-6 hover:text-slate-900 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Dock Board
-      </Link>
-
-      <header className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900">Vendor Accuracy Scorecard</h1>
-        <p className="text-slate-500 text-sm">Supplier performance rankings based on verified dock receipts</p>
-      </header>
-
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -101,6 +91,5 @@ export default function VendorScorecardPage() {
           </tbody>
         </table>
       </div>
-    </main>
   );
 }

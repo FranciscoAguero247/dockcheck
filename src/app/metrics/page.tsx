@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, BarChart3, CalendarDays, Printer, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell, Legend } from 'recharts';
 import { supabase } from '@/lib/supabase';
+import VendorScorecardPage from '../vendor/scorecard/page';
 
 interface MetricsPayload {
   accuracySeries: Array<{ day: string; accuracy: number; verified: number; total: number }>;
@@ -224,6 +225,19 @@ export default function MetricsPage() {
             </div>
           </div>
         </section>
+        <section className="mt-4">
+          <VendorScorecardPage />
+        </section>
+      </div>
+      <div className="mt-8 text-center text-sm text-slate-500">
+        <p>Metrics are based on verified dock receipts and discrepancies logged in the system.</p>
+        <p className="mt-1">Data is refreshed in real-time as shipments are processed.</p>
+      </div>
+      <div className="mt-8 text-center text-xs text-slate-400">
+        <p>© 2024 DockCheck. All rights reserved.</p>
+      </div>
+      <div className="mt-4 text-center text-xs text-slate-400">
+        <p>For support, contact <a href="mailto:support@dockcheck.com" className="text-slate-400 hover:text-slate-600">support@dockcheck.com</a></p>
       </div>
     </main>
   );
