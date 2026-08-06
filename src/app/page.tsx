@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useShipments } from '@/hooks/useShipments';
 import { ShipmentCard } from '@/components/dock/ShipmentCard';
-import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3 } from 'lucide-react';
+import Link from 'next/link';
+import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3, Award } from 'lucide-react';
 
 export default function DockBoardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -60,11 +61,23 @@ export default function DockBoardPage() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch gap-2">
-          <a href="/metrics" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link 
+            href="/metrics" 
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+          >
             <BarChart3 className="w-4 h-4" />
             Metrics
-          </a>
+          </Link>
+
+          <Link 
+            href="/vendor/scorecard"
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+          >
+            <Award className="w-4 h-4 text-amber-500" />
+            Vendor Scorecards
+          </Link>
+
           <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
             <Filter className="w-4 h-4 text-slate-400 ml-2 shrink-0" />
             {['all', 'expected', 'receiving', 'verified', 'discrepancy'].map((status) => (
