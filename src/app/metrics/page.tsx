@@ -145,7 +145,7 @@ export default function MetricsPage() {
             <button type="button" onClick={() => window.print()} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50">
               <Printer className="w-4 h-4 cursor-pointer" /> Print summary
             </button>
-            <ExportButton shipments={payload?.accuracySeries?.flatMap((item) => item.verifiedShipments ?? []) ?? []} />
+            <ExportButton shipments={[]} />
           </div>
         </div>
 

@@ -36,6 +36,9 @@ The people who feel this most are:
 - Recharts for metrics visuals
 - Jest and Testing Library for automated tests
 
+### Key Features
+- **Inbound Scheduling & Auditing:** Provides complete data portability for inbound scheduling and auditing, allowing teams to seamlessly export manifest data for external reporting.
+
 ## Schema overview
 
 The data model is designed around four core tables:
