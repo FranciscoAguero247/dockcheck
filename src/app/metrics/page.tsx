@@ -6,6 +6,28 @@ import { ArrowLeft, BarChart3, CalendarDays, Printer, TrendingUp, AlertTriangle,
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell, Legend } from 'recharts';
 import { supabase } from '@/lib/supabase';
 import VendorScorecardPage from '../vendor/scorecard/page';
+import { Shipment } from '@/types/database';
+import { exportShipmentsToCSV } from '@/lib/csv';
+
+interface ExportButtonProps {
+  shipments: Shipment[];
+}
+
+function ExportButton({ shipments }: ExportButtonProps) {
+  const handleExport = () => {
+    exportShipmentsToCSV(shipments);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleExport}
+      className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50"
+    >
+      <Printer className="w-4 h-4" /> Export CSV
+    </button>
+  );
+}
 
 interface MetricsPayload {
   accuracySeries: Array<{ day: string; accuracy: number; verified: number; total: number }>;
@@ -111,14 +133,19 @@ export default function MetricsPage() {
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">
               <CalendarDays className="w-4 h-4" />
-              <select value={range} onChange={(event) => setRange(event.target.value)} className="bg-transparent outline-none">
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
+              <select value={range} onChange={(event) => setRange(event.target.value)} className="bg-transparent outline-none cursor-pointer">
+                <option value="7d">
+                  Last 7 days
+                </option>
+                <option value="30d">
+                  Last 30 days
+                </option>
               </select>
             </label>
-            <button type="button" onClick={() => window.print()} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">
-              <Printer className="w-4 h-4" /> Print summary
+            <button type="button" onClick={() => window.print()} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50">
+              <Printer className="w-4 h-4 cursor-pointer" /> Print summary
             </button>
+            <ExportButton shipments={payload?.accuracySeries?.flatMap((item) => item.verifiedShipments ?? []) ?? []} />
           </div>
         </div>
 
