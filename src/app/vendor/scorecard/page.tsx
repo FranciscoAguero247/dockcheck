@@ -35,7 +35,12 @@ export default function VendorScorecardPage() {
   }, []);
 
   return (
+    
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dock Board
+        </Link>
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-100/70 border-b border-slate-200 text-xs font-bold uppercase text-slate-500">
