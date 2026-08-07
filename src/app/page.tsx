@@ -5,6 +5,8 @@ import { useShipments } from '@/hooks/useShipments';
 import { ShipmentCard } from '@/components/dock/ShipmentCard';
 import Link from 'next/link';
 import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3, Award } from 'lucide-react';
+import { Printer } from 'lucide-react';
+import { exportShipmentsToCSV } from '@/lib/csv';
 
 export default function DockBoardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -62,6 +64,15 @@ export default function DockBoardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => exportShipmentsToCSV(shipments)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 cursor-pointer"
+          >
+            <Printer className="w-4 h-4" />
+            Export CSV
+          </button>
+
           <Link 
             href="/metrics" 
             className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
@@ -114,7 +125,7 @@ export default function DockBoardPage() {
               setStatusFilter('all');
               setDateFilter('');
             }}
-            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
