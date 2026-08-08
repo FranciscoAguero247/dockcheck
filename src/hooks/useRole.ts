@@ -21,7 +21,7 @@ export function useRole() {
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single();
+        .single<{ role: UserRole }>();
 
       setRole(profile?.role || 'receiver');
       setLoading(false);
