@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useShipments } from '@/hooks/useShipments';
 import { ShipmentCard } from '@/components/dock/ShipmentCard';
 import Link from 'next/link';
-import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3, Award } from 'lucide-react';
-import { Printer } from 'lucide-react';
-import { exportShipmentsToCSV } from '@/lib/csv';
+import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3, Award, Printer, Upload } from 'lucide-react';
+import { exportShipmentsToCSV } from '@/lib/csvExport';
+import { parseShipmentsCSV } from '@/lib/csvImport';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -14,12 +14,40 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export default function DockBoardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const formattedDateString = dateFilter ? format(dateFilter, 'yyyy-MM-dd') : '';
 
   const { shipments, loading, error } = useShipments({
     status: statusFilter,
     date: formattedDateString,
   });
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    parseShipmentsCSV(
+      file,
+      async (parsedShipments) => {
+        console.log('Successfully mapped shipments:', parsedShipments);
+
+        await fetch('/api/shipments/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shipments: parsedShipments }),
+        });
+
+        alert(`Successfully parsed ${parsedShipments.length} shipments from CSV!`);
+        
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      },
+      (errorMessage) => {
+        alert(`Error parsing CSV: ${errorMessage}`);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    );
+  };
 
   const totalCount = shipments.length;
   const receivingCount = shipments.filter((s) => s.status === 'receiving').length;
@@ -68,6 +96,23 @@ export default function DockBoardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Hidden File Input & Import Button */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept=".csv"
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 cursor-pointer"
+          >
+            <Upload className="w-4 h-4" />
+            Import CSV
+          </button>
+
           <button
             type="button"
             onClick={() => exportShipmentsToCSV(shipments)}
