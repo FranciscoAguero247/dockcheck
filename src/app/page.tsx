@@ -7,14 +7,18 @@ import Link from 'next/link';
 import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3, Award } from 'lucide-react';
 import { Printer } from 'lucide-react';
 import { exportShipmentsToCSV } from '@/lib/csv';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export default function DockBoardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [dateFilter, setDateFilter] = useState<string>('');
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const formattedDateString = dateFilter ? format(dateFilter, 'yyyy-MM-dd') : '';
 
   const { shipments, loading, error } = useShipments({
     status: statusFilter,
-    date: dateFilter,
+    date: formattedDateString,
   });
 
   const totalCount = shipments.length;
@@ -107,23 +111,34 @@ export default function DockBoardPage() {
               </button>
             ))}
           </div>
-
-          <label className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-600">
-            <CalendarDays className="w-4 h-4 text-slate-400" />
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(event) => setDateFilter(event.target.value)}
-              className="bg-transparent outline-none text-sm text-slate-700"
-              aria-label="Filter by arrival date"
-            />
-          </label>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer text-left"
+                aria-label="Filter by arrival date"
+              >
+                <CalendarDays className="w-4 h-4 text-slate-400 shrink-0" />
+                <span className="text-sm text-slate-700">
+                  {dateFilter ? format(dateFilter, 'PP') : 'Filter by date'}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFilter}
+                onSelect={setDateFilter}
+              />
+            </PopoverContent>
+          </Popover>
 
           <button
             type="button"
             onClick={() => {
               setStatusFilter('all');
-              setDateFilter('');
+              setDateFilter(undefined);
             }}
             className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 cursor-pointer"
           >
