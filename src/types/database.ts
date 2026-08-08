@@ -1,5 +1,13 @@
 export type ShipmentStatus = 'expected' | 'receiving' | 'verified' | 'discrepancy';
 export type DiscrepancyType = 'shortage' | 'overage' | 'damage' | 'mislabel';
+export type UserRole = 'receiver' | 'supervisor' | 'admin';
+
+export interface Profile {
+  id: string;
+  role: UserRole;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface Vendor {
   id: string;
@@ -47,14 +55,34 @@ export interface Discrepancy {
   logged_at: string;
 }
 
-// Database mapping for typed Supabase operations
 export interface Database {
   public: {
     Tables: {
-      vendors: { Row: Vendor };
-      shipments: { Row: Shipment };
-      line_items: { Row: LineItem };
-      discrepancies: { Row: Discrepancy };
+      profiles: { 
+        Row: Profile;
+        Insert: Omit<Profile, 'created_at' | 'updated_at'> & { created_at?: string; updated_at?: string };
+        Update: Partial<Omit<Profile, 'id'>>;
+      };
+      vendors: { 
+        Row: Vendor;
+        Insert: Omit<Vendor, 'id' | 'created_at'> & { id?: string; created_at?: string };
+        Update: Partial<Omit<Vendor, 'id'>>;
+      };
+      shipments: { 
+        Row: Shipment;
+        Insert: Omit<Shipment, 'id' | 'created_at' | 'updated_at'> & { id?: string; created_at?: string; updated_at?: string };
+        Update: Partial<Omit<Shipment, 'id'>>;
+      };
+      line_items: { 
+        Row: LineItem;
+        Insert: Omit<LineItem, 'id' | 'created_at'> & { id?: string; created_at?: string };
+        Update: Partial<Omit<LineItem, 'id'>>;
+      };
+      discrepancies: { 
+        Row: Discrepancy;
+        Insert: Omit<Discrepancy, 'id' | 'logged_at'> & { id?: string; logged_at?: string };
+        Update: Partial<Omit<Discrepancy, 'id'>>;
+      };
     };
   };
 }

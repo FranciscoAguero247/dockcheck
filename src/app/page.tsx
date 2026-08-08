@@ -10,11 +10,13 @@ import { parseShipmentsCSV } from '@/lib/csvImport';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useRole } from '@/hooks/useRole';
 
 export default function DockBoardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { role, isSupervisor, loading: roleLoading } = useRole();
 
   const formattedDateString = dateFilter ? format(dateFilter, 'yyyy-MM-dd') : '';
 
@@ -96,7 +98,6 @@ export default function DockBoardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Hidden File Input & Import Button */}
           <input
             type="file"
             ref={fileInputRef}
@@ -104,6 +105,9 @@ export default function DockBoardPage() {
             accept=".csv"
             className="hidden"
           />
+
+          {isSupervisor && (
+            <>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -137,6 +141,8 @@ export default function DockBoardPage() {
             <Award className="w-4 h-4 text-amber-500" />
             Vendor Scorecards
           </Link>
+          </>
+          )}
 
           <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
             <Filter className="w-4 h-4 text-slate-400 ml-2 shrink-0" />
@@ -235,12 +241,13 @@ export default function DockBoardPage() {
         </div>
       </section>
 
-      {shipments.length === 0 ? (
+      {shipments.length === 0 && (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm" role="status">
           <p className="text-lg font-semibold text-slate-900">No shipments match the selected filter.</p>
           <p className="mt-2 text-sm text-slate-600">Try widening the date range or switching back to the full dock board.</p>
         </div>
-      ) : (
+      )}
+      {shipments.length > 0 && isSupervisor && (
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {shipments.map((shipment) => (
             <ShipmentCard key={shipment.id} shipment={shipment} />
