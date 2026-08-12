@@ -1,18 +1,22 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useShipments } from '@/hooks/useShipments';
 import { ShipmentCard } from '@/components/dock/ShipmentCard';
 import Link from 'next/link';
-import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3, Award, Printer, Upload } from 'lucide-react';
+import { CalendarDays, Filter, Layers, CheckCircle2, AlertTriangle, Clock, RotateCcw, BarChart3, Award, Printer, Upload, LogOut } from 'lucide-react';
 import { exportShipmentsToCSV } from '@/lib/csvExport';
 import { parseShipmentsCSV } from '@/lib/csvImport';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRole } from '@/hooks/useRole';
+import { supabase } from '@/lib/supabase';
+
 
 export default function DockBoardPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -24,6 +28,12 @@ export default function DockBoardPage() {
     status: statusFilter,
     date: formattedDateString,
   });
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -195,6 +205,15 @@ export default function DockBoardPage() {
           >
             <RotateCcw className="w-4 h-4" />
             Reset
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition-colors hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 cursor-pointer ml-auto md:ml-0"
+          >
+            <LogOut className="w-4 h-4"/>
+              Sign out
           </button>
         </div>
       </header>
