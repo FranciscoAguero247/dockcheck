@@ -10,21 +10,32 @@ export function useRole() {
 
   useEffect(() => {
     async function getUserRole() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setRole(null);
-        setLoading(false);
-        return;
+      try {    
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setRole(null);
+          setLoading(false);
+          return;
+        }
+
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (error) {
+          console.error('Error fetching role:', error.message);
+          setRole('receiver');
+        } else {
+          setRole(profile?.role || 'receiver');
+        }
+      } catch (error) {
+        console.error('Unexpected error in useRole:', err);
+        setRole('receiver');
+      } finally {
+          setLoading(false);
       }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single<{ role: UserRole }>();
-
-      setRole(profile?.role || 'receiver');
-      setLoading(false);
     }
 
     getUserRole();
