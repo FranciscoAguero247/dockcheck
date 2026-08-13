@@ -6,12 +6,7 @@ DockCheck is a production-minded dock receiving workspace for teams under deadli
 
 ## The problem
 
-Receivers under deadline pressure cannot see which trailers are waiting, supervisors cannot see how receiving is tracking against the day, and when a count does not match, the discrepancy often surfaces days later as a mystery inventory error that someone else has to chase.
-
-The people who feel this most are:
-- the receiving team during the shift
-- the supervisor at end of day
-- the inventory team downstream
+Having spent nearly three years on the dock managing inbound freight under tight daily deadlines, I experienced firsthand how paper-based verification inevitably lets errors slip through the cracks until they surface days later as downstream inventory mysteries. DockCheck is the real-time visibility and tracking tool I wish my team and I had on the floor to eliminate the guesswork for receivers, supervisors, and inventory specialists alike.
 
 ## Screenshots
 
