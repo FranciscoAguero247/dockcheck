@@ -1,4 +1,4 @@
-import { exportToCSV, formatCSVRow } from '../csvExport';
+import { exportShipmentsToCSV, formatCSVRow } from './csvExport';
 
 describe('CSV Export Utility', () => {
   let appendChildSpy: jest.SpyInstance;
@@ -7,13 +7,11 @@ describe('CSV Export Utility', () => {
   let revokeObjectURLSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
-    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
-    createObjectURLSpy = jest.fn().mockReturnValue('blob:http://localhost/mock-url');
-    revokeObjectURLSpy = jest.fn();
+    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node as any);
+    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node as any);
 
-    global.URL.createObjectURL = createObjectURLSpy;
-    global.URL.revokeObjectURL = revokeObjectURLSpy;
+    createObjectURLSpy = jest.spyOn(global.URL, 'createObjectURL').mockReturnValue('blob:http://localhost/mock-url');
+    revokeObjectURLSpy = jest.spyOn(global.URL, 'revokeObjectURL').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -42,7 +40,7 @@ describe('CSV Export Utility', () => {
     });
   });
 
-  describe('exportToCSV', () => {
+  describe('exportShipmentsToCSV', () => {
     const mockData = [
       { vendor: 'Acme Corp', totalDeliveries: 45, accuracyRate: '98%' },
       { vendor: 'Global Logistics, LLC', totalDeliveries: 12, accuracyRate: '85%' },
@@ -57,7 +55,7 @@ describe('CSV Export Utility', () => {
     it('creates a download link and triggers click on export', () => {
       const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
-      exportToCSV('vendor-scorecard.csv', mockData, headers);
+      exportShipmentsToCSV('vendor-scorecard.csv', mockData, headers);
 
       expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
       expect(appendChildSpy).toHaveBeenCalledTimes(1);
@@ -69,7 +67,7 @@ describe('CSV Export Utility', () => {
     it('does not trigger download if dataset is empty', () => {
       const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
-      exportToCSV('empty.csv', [], headers);
+      exportShipmentsToCSV('empty.csv', [], headers);
 
       expect(createObjectURLSpy).not.toHaveBeenCalled();
       expect(clickSpy).not.toHaveBeenCalled();
