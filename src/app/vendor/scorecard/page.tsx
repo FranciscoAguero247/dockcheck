@@ -36,6 +36,10 @@ export default function VendorScorecardPage() {
 
   return (
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <Link href="/" className="flex items-center gap-6 text-slate-600 hover:text-slate-900 border-b border-slate-200 p-4">
+          <ArrowLeft className="w-5 h-5" />
+           <span>Back to Dashboard</span>
+        </Link>
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-100/70 border-b border-slate-200 text-xs font-bold uppercase text-slate-500">
