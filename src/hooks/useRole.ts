@@ -22,7 +22,7 @@ export function useRole() {
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .maybeSingle()
+          .maybeSingle() as { data: { role: UserRole } | null; error: any};
 
         if (error) {
           console.error('Error fetching role:', error.message);
@@ -31,7 +31,7 @@ export function useRole() {
           setRole(profile?.role || 'receiver');
         }
       } catch (error) {
-        console.error('Unexpected error in useRole:', err);
+        console.error('Unexpected error in useRole:', error);
         setRole('receiver');
       } finally {
           setLoading(false);
