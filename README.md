@@ -55,8 +55,13 @@ Key fields include:
 
 The demo experience is intentionally lightweight for evaluation purposes.
 
+Receiver demo login credentials:
 - Email: demo@dockcheck.app
 - Password: DockCheck2026!
+
+Supervisor demo login credentials:
+- Email: supervisor@dockcheck.app
+- Password: Boss-kT6!
 
 ## Local setup
 
