@@ -47,9 +47,9 @@ describe('CSV Export Utility', () => {
     ];
 
     const headers = [
-      { key: 'vendor', label: 'Vendor Name' },
-      { key: 'totalDeliveries', label: 'Total Deliveries' },
-      { key: 'accuracyRate', label: 'Accuracy' },
+      { key: 'vendor' as const, label: 'Vendor Name' },
+      { key: 'totalDeliveries' as const, label: 'Total Deliveries' },
+      { key: 'accuracyRate' as const, label: 'Accuracy' },
     ];
 
     it('creates a download link and triggers click on export', () => {
