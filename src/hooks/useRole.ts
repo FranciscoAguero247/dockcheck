@@ -22,10 +22,10 @@ export function useRole() {
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .maybeSingle() as { data: { role: UserRole } | null; error: any};
+          .maybeSingle() as { data: { role: UserRole } | null; error: unknown };
 
         if (error) {
-          console.error('Error fetching role:', error.message);
+          console.error('Error fetching role:', (error as { message: string }).message);
           setRole('receiver');
         } else {
           setRole(profile?.role || 'receiver');

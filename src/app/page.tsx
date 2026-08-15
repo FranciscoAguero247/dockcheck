@@ -20,7 +20,7 @@ export default function DockBoardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { role, isSupervisor, loading: roleLoading } = useRole();
+  const { isSupervisor } = useRole();
 
   const formattedDateString = dateFilter ? format(dateFilter, 'yyyy-MM-dd') : '';
 

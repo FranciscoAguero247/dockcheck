@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Camera, X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export function BarcodeScannerModal({ 
@@ -17,6 +17,14 @@ export function BarcodeScannerModal({
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
 
+    interface BarcodeDetectorInstance {
+        detect(source: HTMLVideoElement): Promise<Array<{ rawValue: string }>>;
+    }
+
+    interface BarcodeDetectorConstructor {
+        new (options: { formats: string[] }): BarcodeDetectorInstance;
+    }
+
     useEffect(() => {
         if (!isOpen) {
             setError(null);
@@ -29,7 +37,6 @@ export function BarcodeScannerModal({
 
         async function startCamera() {
             try {
-                setError(null);
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'environment' }
                 });
@@ -45,10 +52,13 @@ export function BarcodeScannerModal({
                 }
 
                 if ('BarcodeDetector' in window) {
-                    const BarcodeDetectorClass = (window as any).BarcodeDetector;
-                    const barcodeDetector = new BarcodeDetectorClass({
+                    const BarcodeDetectorClass = (window as unknown as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector;
+                    
+                    if(BarcodeDetectorClass){
+                        const barcodeDetector = new BarcodeDetectorClass({
                         formats: ['code_128', 'qr_code', 'ean_13', 'code_39', 'upc_a']
                     });
+
 
                     const detectCode = async () => {
                         if (!isMounted) return;
@@ -86,6 +96,7 @@ export function BarcodeScannerModal({
                 } else {
                     console.warn('BarcodeDetector API is not supported in this browser.');
                 }
+            }
             } catch (err) {
                 if (isMounted) {
                     setError('Camera permission denied or device camera unavailable.');

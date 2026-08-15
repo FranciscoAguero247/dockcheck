@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Camera, CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import Image from 'next/image';
 
 interface DiscrepancyPhotoUploadProps {
   shipmentId: string;
@@ -61,7 +62,7 @@ export function DiscrepancyPhotoUpload({ shipmentId, onPhotoUploaded }: Discrepa
     <div className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center bg-slate-50 hover:bg-slate-100 transition-colors">
       {preview ? (
         <div className="relative rounded-lg overflow-hidden max-h-48">
-          <img src={preview} alt="Discrepancy preview" className="w-full h-full object-cover" />
+          <Image src={preview} alt="Discrepancy preview" className="w-full h-full object-cover" />
           
           {uploading ? (
             <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white gap-2">

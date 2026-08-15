@@ -29,7 +29,7 @@ export function parseShipmentsCSV(
         }));
 
         onComplete(mappedShipments);
-      } catch (err) {
+      } catch {
         onError('Failed to map CSV rows to shipment structure.');
       }
     },

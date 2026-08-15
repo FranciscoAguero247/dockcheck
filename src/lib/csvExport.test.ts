@@ -7,8 +7,8 @@ describe('CSV Export Utility', () => {
   let revokeObjectURLSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node as any);
-    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node as any);
+    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node as unknown as HTMLElement);
+    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node as unknown as HTMLElement);
 
     createObjectURLSpy = jest.spyOn(global.URL, 'createObjectURL').mockReturnValue('blob:http://localhost/mock-url');
     revokeObjectURLSpy = jest.spyOn(global.URL, 'revokeObjectURL').mockImplementation(() => {});
