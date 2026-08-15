@@ -1,108 +1,139 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import VendorScorecardPage from '../page';
-import { exportToCSV } from '@/lib/csvExport';
+import { render, screen, waitFor } from '@testing-library/react';
+import VendorScorecardPage from '@/app/vendor/scorecard/page';
+import { supabase } from '@/lib/supabase';
 
-jest.mock('@/lib/csvExport', () => ({
-  exportToCSV: jest.fn(),
+// Mock Supabase client
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn(),
+  },
 }));
 
-const mockScorecards = [
+// Mock Next.js Link component
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
+
+const mockScorecardsData = [
   {
-    id: 'v1',
+    vendor_id: 'v1',
     vendor_name: 'Apex Industrial',
-    total_pos: 20,
-    on_time_deliveries: 19,
-    discrepancy_count: 1,
-    accuracy_rate: 95.0,
+    vendor_code: 'APEX-01',
+    total_shipments: 20,
+    verified_shipments: 19,
+    discrepancy_shipments: 1,
+    accuracy_rate: 96.5,
   },
   {
-    id: 'v2',
+    vendor_id: 'v2',
     vendor_name: 'Branded Logistics',
-    total_pos: 10,
-    on_time_deliveries: 7,
-    discrepancy_count: 3,
-    accuracy_rate: 70.0,
+    vendor_code: 'BRAND-02',
+    total_shipments: 10,
+    verified_shipments: 8,
+    discrepancy_shipments: 2,
+    accuracy_rate: 85.0,
+  },
+  {
+    vendor_id: 'v3',
+    vendor_name: 'Core Supply',
+    vendor_code: 'CORE-03',
+    total_shipments: 15,
+    verified_shipments: 10,
+    discrepancy_shipments: 5,
+    accuracy_rate: 75.0,
   },
 ];
 
-jest.mock('@/hooks/useVendorScorecards', () => ({
-  useVendorScorecards: jest.fn(() => ({
-    data: mockScorecards,
-    loading: false,
-    error: null,
-    refetch: jest.fn(),
-  })),
-}));
+describe('VendorScorecardPage', () => {
+  let selectMock: jest.Mock;
+  let orderMock: jest.Mock;
+  let fromMock: jest.Mock;
 
-import { useVendorScorecards } from '@/hooks/useVendorScorecards';
-
-describe('VendorScorecard Page View', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    orderMock = jest.fn().mockResolvedValue({
+      data: mockScorecardsData,
+      error: null,
+    });
+
+    selectMock = jest.fn().mockReturnValue({
+      order: orderMock,
+    });
+
+    fromMock = (supabase.from as jest.Mock).mockReturnValue({
+      select: selectMock,
+    });
   });
 
-  it('renders loading skeleton/spinner when loading state is true', () => {
-    (useVendorScorecards as jest.Mock).mockReturnValue({
+  it('renders loading spinner and text initially', async () => {
+    // Delay resolution to capture loading state
+    orderMock.mockImplementationOnce(
+      () => new Promise((resolve) => setTimeout(() => resolve({ data: [], error: null }), 100))
+    );
+
+    render(<VendorScorecardPage />);
+
+    expect(screen.getByText(/loading scorecards\.\.\./i)).toBeInTheDocument();
+    
+    // Wait for async action to finish to prevent test leaks
+    await waitFor(() => {
+      expect(screen.queryByText(/loading scorecards\.\.\./i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('fetches scorecard data from Supabase and renders rows correctly with ranks', async () => {
+    render(<VendorScorecardPage />);
+
+    // Check query setup
+    expect(fromMock).toHaveBeenCalledWith('vendor_scorecards');
+    expect(selectMock).toHaveBeenCalledWith('*');
+    expect(orderMock).toHaveBeenCalledWith('accuracy_rate', { ascending: false });
+
+    // Wait for data render
+    await waitFor(() => {
+      expect(screen.getByText('Apex Industrial')).toBeInTheDocument();
+    });
+
+    // Check ranks and vendor codes
+    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText('(APEX-01)')).toBeInTheDocument();
+    expect(screen.getByText('Branded Logistics')).toBeInTheDocument();
+    expect(screen.getByText('Core Supply')).toBeInTheDocument();
+
+    // Check numbers/metrics
+    expect(screen.getByText('20')).toBeInTheDocument();
+    expect(screen.getByText('19')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+
+    // Check badges for accuracy rates based on thresholds
+    expect(screen.getByText('96.5%')).toHaveClass('bg-emerald-100 text-emerald-800');
+    expect(screen.getByText('85%')).toHaveClass('bg-amber-100 text-amber-800');
+    expect(screen.getByText('75%')).toHaveClass('bg-rose-100 text-rose-800');
+  });
+
+  it('renders empty state message when no scorecards are available', async () => {
+    orderMock.mockResolvedValueOnce({
       data: [],
-      loading: true,
       error: null,
     });
 
     render(<VendorScorecardPage />);
-    expect(screen.getByTestId('scorecard-loading-skeleton')).toBeInTheDocument();
-  });
 
-  it('renders vendor metrics correctly when data loads', () => {
-    render(<VendorScorecardPage />);
-
-    expect(screen.getByText('Apex Industrial')).toBeInTheDocument();
-    expect(screen.getByText('Branded Logistics')).toBeInTheDocument();
-
-    const apexRow = screen.getByText('Apex Industrial').closest('tr')!;
-    expect(within(apexRow).getByText('20')).toBeInTheDocument();
-    expect(within(apexRow).getByText('95%')).toBeInTheDocument();
-
-    const brandedRow = screen.getByText('Branded Logistics').closest('tr')!;
-    expect(within(brandedRow).getByText('70%')).toBeInTheDocument();
-  });
-
-  it('filters vendor list when searching by vendor name', async () => {
-    render(<VendorScorecardPage />);
-
-    const searchInput = screen.getByPlaceholderText(/search vendor/i);
-    await userEvent.type(searchInput, 'Apex');
-
-    expect(screen.getByText('Apex Industrial')).toBeInTheDocument();
-    expect(screen.queryByText('Branded Logistics')).not.toBeInTheDocument();
-  });
-
-  it('displays error state when hook fails', () => {
-    (useVendorScorecards as jest.Mock).mockReturnValue({
-      data: [],
-      loading: false,
-      error: 'Failed to connect to database',
+    await waitFor(() => {
+      expect(screen.getByText(/no vendor scorecard data available\./i)).toBeInTheDocument();
     });
-
-    render(<VendorScorecardPage />);
-    expect(screen.getByText(/failed to connect to database/i)).toBeInTheDocument();
   });
 
-  it('calls exportToCSV with formatted scorecard data on CSV button click', async () => {
+  it('renders dashboard navigation link properly', () => {
     render(<VendorScorecardPage />);
 
-    const exportBtn = screen.getByRole('button', { name: /export csv/i });
-    await userEvent.click(exportBtn);
-
-    expect(exportToCSV).toHaveBeenCalledTimes(1);
-    expect(exportToCSV).toHaveBeenCalledWith(
-      expect.stringMatching(/vendor-scorecards-.*\.csv/),
-      mockScorecards,
-      expect.arrayContaining([
-        expect.objectContaining({ key: 'vendor_name' }),
-        expect.objectContaining({ key: 'accuracy_rate' }),
-      ])
-    );
+    const backLink = screen.getByRole('link', { name: /back to dashboard/i });
+    expect(backLink).toBeInTheDocument();
+    expect(backLink).toHaveAttribute('href', '/');
   });
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DiscrepancyPhotoUpload } from '../DiscrepancyPhotoUpload';
+import { DiscrepancyPhotoUpload } from './DiscrepancyPhotoUpload';
 import { supabase } from '@/lib/supabase';
 
 jest.mock('@/lib/supabase', () => ({

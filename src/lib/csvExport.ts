@@ -20,7 +20,7 @@ export function formatCSVRow(row: unknown[]): string {
     .join(',');
 }
 
-export function exportShipmentsToCSV<T extends Record<string, unknown[]>>(
+export function exportShipmentsToCSV<T extends Record<string, any>>(
   filenameOrShipments: string | Shipment[],
   data?: T[],
   headers?: CSVHeader<T>[]
