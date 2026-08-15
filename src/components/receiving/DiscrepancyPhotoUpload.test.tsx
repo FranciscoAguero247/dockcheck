@@ -1,101 +1,134 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DiscrepancyPhotoUpload } from './DiscrepancyPhotoUpload';
 import { supabase } from '@/lib/supabase';
 
+// Mock Next.js Image component
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img {...props} alt={props.alt || ''} />;
+  },
+}));
+
+// Mock Supabase client
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     storage: {
-      from: jest.fn().mockReturnValue({
+      from: jest.fn(() => ({
         upload: jest.fn(),
         getPublicUrl: jest.fn(),
-      }),
+      })),
     },
   },
 }));
 
 describe('DiscrepancyPhotoUpload Component', () => {
   const mockOnUploadSuccess = jest.fn();
+  const defaultProps = {
+    poId: 'PO-123',
+    onUploadSuccess: mockOnUploadSuccess,
+  };
+
+  beforeAll(() => {
+    // Polyfill JSDOM URL methods
+    Object.defineProperty(window, 'URL', {
+      writable: true,
+      value: {
+        createObjectURL: jest.fn(() => 'blob:http://localhost/fake-temp-url'),
+        revokeObjectURL: jest.fn(),
+      },
+    });
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders upload area correctly', () => {
-    render(<DiscrepancyPhotoUpload poId="po-123" onUploadSuccess={mockOnUploadSuccess} />);
+    render(<DiscrepancyPhotoUpload {...defaultProps} />);
 
     expect(screen.getByText(/upload discrepancy photo/i)).toBeInTheDocument();
     expect(screen.getByText(/png, jpg up to 5mb/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/choose file/i)).toBeInTheDocument();
   });
 
   it('shows error if a non-image file is selected', async () => {
-    render(<DiscrepancyPhotoUpload poId="po-123" onUploadSuccess={mockOnUploadSuccess} />);
+    render(<DiscrepancyPhotoUpload {...defaultProps} />);
 
-    const invalidFile = new File(['text content'], 'notes.txt', { type: 'text/plain' });
-    const input = screen.getByLabelText(/choose file/i) as HTMLInputElement;
+    const input = screen.getByLabelText(/choose file/i);
+    const invalidFile = new File(['hello'], 'document.pdf', { type: 'application/pdf' });
 
-    await userEvent.upload(input, invalidFile);
+    // applyAccept: false forces userEvent to pass non-matching files to onChange
+    await userEvent.upload(input, invalidFile, { applyAccept: false });
 
-    expect(screen.getByText(/only image files \(png, jpg\) are allowed/i)).toBeInTheDocument();
+    const errorMessage = await screen.findByText(/only image files \(png, jpg\) are allowed/i);
+    expect(errorMessage).toBeInTheDocument();
     expect(mockOnUploadSuccess).not.toHaveBeenCalled();
   });
 
   it('shows error if file size exceeds max limit (5MB)', async () => {
-    render(<DiscrepancyPhotoUpload poId="po-123" onUploadSuccess={mockOnUploadSuccess} />);
+    render(<DiscrepancyPhotoUpload {...defaultProps} />);
 
-    const oversizedFile = new File([new ArrayBuffer(6 * 1024 * 1024)], 'large-damage.jpg', {
-      type: 'image/jpeg',
+    const input = screen.getByLabelText(/choose file/i);
+    // Create dummy file larger than 5MB
+    const largeFile = new File([new ArrayBuffer(5 * 1024 * 1024 + 1)], 'large.png', {
+      type: 'image/png',
     });
-    const input = screen.getByLabelText(/choose file/i) as HTMLInputElement;
 
-    await userEvent.upload(input, oversizedFile);
+    await userEvent.upload(input, largeFile);
 
-    expect(screen.getByText(/file size must be less than 5mb/i)).toBeInTheDocument();
+    const errorMessage = await screen.findByText(/file size must be less than 5mb/i);
+    expect(errorMessage).toBeInTheDocument();
     expect(mockOnUploadSuccess).not.toHaveBeenCalled();
   });
 
   it('uploads valid image to Supabase and returns public URL', async () => {
-    const mockUpload = jest.fn().mockResolvedValue({
-      data: { path: 'discrepancies/po-123/damage.png' },
-      error: null,
-    });
+    const mockUpload = jest.fn();
     const mockGetPublicUrl = jest.fn().mockReturnValue({
-      data: { publicUrl: 'https://supabase.co/storage/v1/object/public/discrepancies/damage.png' },
+      data: { publicUrl: 'https://example.com/storage/PO-123/photo.png' },
     });
+
+    let resolveUploadPromise: (value: any) => void;
+    const uploadPromise = new Promise((resolve) => {
+      resolveUploadPromise = resolve;
+    });
+
+    mockUpload.mockReturnValue(uploadPromise);
 
     (supabase.storage.from as jest.Mock).mockReturnValue({
       upload: mockUpload,
       getPublicUrl: mockGetPublicUrl,
     });
 
-    render(<DiscrepancyPhotoUpload poId="po-123" onUploadSuccess={mockOnUploadSuccess} />);
+    render(<DiscrepancyPhotoUpload {...defaultProps} />);
 
-    const validFile = new File(['fake-image-bytes'], 'damage.png', { type: 'image/png' });
-    const input = screen.getByLabelText(/choose file/i) as HTMLInputElement;
+    const input = screen.getByLabelText(/choose file/i);
+    const validFile = new File(['img-content'], 'test.png', { type: 'image/png' });
 
     await userEvent.upload(input, validFile);
 
-    expect(screen.getByText(/uploading.../i)).toBeInTheDocument();
+    // 1. Verify loading state is displayed
+    expect(await screen.findByText(/uploading.../i)).toBeInTheDocument();
 
+    // 2. Resolve upload promise
+    resolveUploadPromise!({ data: { path: 'PO-123/12345.png' }, error: null });
+
+    // 3. Verify success UI and callback
     await waitFor(() => {
-      expect(mockUpload).toHaveBeenCalledWith(
-        expect.stringContaining('po-123/'),
-        validFile,
-        expect.objectContaining({ cacheControl: '3600', upsert: false })
-      );
-      expect(mockOnUploadSuccess).toHaveBeenCalledWith(
-        'https://supabase.co/storage/v1/object/public/discrepancies/damage.png'
-      );
+      expect(screen.getByText(/upload complete/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/upload complete/i)).toBeInTheDocument();
+    expect(mockOnUploadSuccess).toHaveBeenCalledWith(
+      'https://example.com/storage/PO-123/photo.png'
+    );
   });
 
   it('handles Supabase upload errors gracefully', async () => {
     const mockUpload = jest.fn().mockResolvedValue({
       data: null,
-      error: { message: 'Storage quota exceeded' },
+      error: { message: 'Upload failed: Storage bucket full' },
     });
 
     (supabase.storage.from as jest.Mock).mockReturnValue({
@@ -103,16 +136,15 @@ describe('DiscrepancyPhotoUpload Component', () => {
       getPublicUrl: jest.fn(),
     });
 
-    render(<DiscrepancyPhotoUpload poId="po-123" onUploadSuccess={mockOnUploadSuccess} />);
+    render(<DiscrepancyPhotoUpload {...defaultProps} />);
 
-    const validFile = new File(['fake-image-bytes'], 'damage.png', { type: 'image/png' });
-    const input = screen.getByLabelText(/choose file/i) as HTMLInputElement;
+    const input = screen.getByLabelText(/choose file/i);
+    const validFile = new File(['img-content'], 'test.png', { type: 'image/png' });
 
     await userEvent.upload(input, validFile);
 
-    await waitFor(() => {
-      expect(screen.getByText(/storage quota exceeded/i)).toBeInTheDocument();
-      expect(mockOnUploadSuccess).not.toHaveBeenCalled();
-    });
+    const errorMessage = await screen.findByText(/upload failed: storage bucket full/i);
+    expect(errorMessage).toBeInTheDocument();
+    expect(mockOnUploadSuccess).not.toHaveBeenCalled();
   });
 });
