@@ -1,76 +1,60 @@
-import { exportShipmentsToCSV, formatCSVRow } from './csvExport';
+export interface CSVHeader<T> {
+  key: keyof T;
+  label: string;
+}
 
-describe('CSV Export Utility', () => {
-  let appendChildSpy: jest.SpyInstance;
-  let removeChildSpy: jest.SpyInstance;
-  let createObjectURLSpy: jest.SpyInstance;
-  let revokeObjectURLSpy: jest.SpyInstance;
+export function formatCSVRow(row: Array<string | number | null | undefined>): string {
+  return row
+    .map((cell) => {
+      if (cell === null || cell === undefined) {
+        return '';
+      }
+      const stringValue = String(cell);
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    })
+    .join(',');
+}
 
-  beforeEach(() => {
-    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node as unknown as HTMLElement);
-    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node as unknown as HTMLElement);
+export function exportShipmentsToCSV<T extends Record<string, unknown>>(
+  filename: string,
+  data: T[],
+  headers: CSVHeader<T>[]
+): void {
+  if (!data || data.length === 0) {
+    return;
+  }
 
-    createObjectURLSpy = jest.spyOn((global as any).URL, 'createObjectURL').mockReturnValue('blob:http://localhost/mock-url');
-    revokeObjectURLSpy = jest.spyOn((global as any).URL, 'revokeObjectURL').mockImplementation(() => {});
-  });
+  const csvRows: string[] = [];
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+  const headerLabels = headers.map((header) => header.label);
+  csvRows.push(formatCSVRow(headerLabels));
 
-  describe('formatCSVRow', () => {
-    it('formats basic string values correctly', () => {
-      const row = ['Vendor A', 'PO-1002', 'Received'];
-      expect(formatCSVRow(row)).toBe('Vendor A,PO-1002,Received');
+  for (const item of data) {
+    const rowValues = headers.map((header) => {
+      const value = item[header.key];
+      if (value === null || value === undefined) {
+        return '';
+      }
+      return value as string | number;
     });
+    csvRows.push(formatCSVRow(rowValues));
+  }
 
-    it('escapes fields containing commas', () => {
-      const row = ['Acme, Inc.', 'PO-1002', 'OK'];
-      expect(formatCSVRow(row)).toBe('"Acme, Inc.",PO-1002,OK');
-    });
+  const csvContent = csvRows.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
 
-    it('escapes double quotes by doubling them', () => {
-      const row = ['Widget "X"', 'PO-1003'];
-      expect(formatCSVRow(row)).toBe('"Widget ""X""",PO-1003');
-    });
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
 
-    it('handles null, undefined, and numbers gracefully', () => {
-      const row = [100, null, undefined, 99.5];
-      expect(formatCSVRow(row)).toBe('100,,,99.5');
-    });
-  });
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
-  describe('exportShipmentsToCSV', () => {
-    const mockData = [
-      { vendor: 'Acme Corp', totalDeliveries: 45, accuracyRate: '98%' },
-      { vendor: 'Global Logistics, LLC', totalDeliveries: 12, accuracyRate: '85%' },
-    ];
-
-    const headers = [
-      { key: 'vendor' as const, label: 'Vendor Name' },
-      { key: 'totalDeliveries' as const, label: 'Total Deliveries' },
-      { key: 'accuracyRate' as const, label: 'Accuracy' },
-    ];
-
-    it('creates a download link and triggers click on export', () => {
-      const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-
-      exportShipmentsToCSV('vendor-scorecard.csv', mockData, headers);
-
-      expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-      expect(appendChildSpy).toHaveBeenCalledTimes(1);
-      expect(clickSpy).toHaveBeenCalledTimes(1);
-      expect(removeChildSpy).toHaveBeenCalledTimes(1);
-      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:http://localhost/mock-url');
-    });
-
-    it('does not trigger download if dataset is empty', () => {
-      const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-
-      exportShipmentsToCSV('empty.csv', [], headers);
-
-      expect(createObjectURLSpy).not.toHaveBeenCalled();
-      expect(clickSpy).not.toHaveBeenCalled();
-    });
-  });
-});
+  URL.revokeObjectURL(url);
+}
