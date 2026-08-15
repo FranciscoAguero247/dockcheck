@@ -90,8 +90,15 @@ describe('DiscrepancyPhotoUpload Component', () => {
       data: { publicUrl: 'https://example.com/storage/PO-123/photo.png' },
     });
 
-    let resolveUploadPromise: (value: any) => void;
-    const uploadPromise = new Promise((resolve) => {
+    let resolveUploadPromise: (value: {
+      data: { path: string } | null;
+      error: { message: string } | null;
+    }) => void;
+    
+    const uploadPromise = new Promise<{
+      data: { path: string } | null;
+      error: { message: string } | null;
+    }>((resolve) => {
       resolveUploadPromise = resolve;
     });
 
@@ -109,13 +116,10 @@ describe('DiscrepancyPhotoUpload Component', () => {
 
     await userEvent.upload(input, validFile);
 
-    // 1. Verify loading state is displayed
     expect(await screen.findByText(/uploading.../i)).toBeInTheDocument();
 
-    // 2. Resolve upload promise
     resolveUploadPromise!({ data: { path: 'PO-123/12345.png' }, error: null });
 
-    // 3. Verify success UI and callback
     await waitFor(() => {
       expect(screen.getByText(/upload complete/i)).toBeInTheDocument();
     });
