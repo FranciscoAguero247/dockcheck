@@ -10,8 +10,8 @@ Having spent nearly three years on the dock managing inbound freight under tight
 
 ## Screenshots
 
-- Dock board overview: [public/screenshots/dock-board.svg](public/screenshots/dock-board.png)
-- Receiving flow: [public/screenshots/receiving-flow.svg](public/screenshots/receiving-flow.png)
+- Dock board overview: ![Dock board overview](public/screenshots/dock-board.png)
+- Receiving flow: ![Receiving flow](public/screenshots/receiving-flow.png)
 
 ## What it does
 
