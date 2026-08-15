@@ -2,7 +2,7 @@
 
 DockCheck is a production-minded dock receiving workspace for teams under deadline pressure. It gives the receiving team a live view of trailers waiting to be checked in, gives supervisors a clear picture of how the shift is tracking, and captures discrepancies the moment a count does not match so inventory errors do not surface later as a mystery.
 
-[![CI](https://github.com/francisco-aguero/dockcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/francisco-aguero/dockcheck/actions/workflows/ci.yml)
+[![CI](https://github.com/FranciscoAguero247/dockcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/FranciscoAguero247/dockcheck/actions/workflows/ci.yml)
 
 ## The problem
 
