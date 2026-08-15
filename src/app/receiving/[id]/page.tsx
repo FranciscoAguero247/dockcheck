@@ -314,8 +314,8 @@ export default function ShipmentDetailPage() {
 
             <div className="mt-4">
               <DiscrepancyPhotoUpload 
-                shipmentId={shipment.id} 
-                onPhotoUploaded={(url) => {
+                poId={shipment.id} 
+                onUploadSuccess={(url) => {
                   setUploadedPhotoUrl(url);
                 }} 
               />
