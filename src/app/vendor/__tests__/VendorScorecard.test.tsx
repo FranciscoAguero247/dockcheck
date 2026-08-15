@@ -3,14 +3,12 @@ import { render, screen, waitFor } from '@testing-library/react';
 import VendorScorecardPage from '@/app/vendor/scorecard/page';
 import { supabase } from '@/lib/supabase';
 
-// Mock Supabase client
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     from: jest.fn(),
   },
 }));
 
-// Mock Next.js Link component
 jest.mock('next/link', () => ({
   __esModule: true,
   default: ({ children, href }: { children: React.ReactNode; href: string }) => (
@@ -80,7 +78,6 @@ describe('VendorScorecardPage', () => {
 
     expect(screen.getByText(/loading scorecards\.\.\./i)).toBeInTheDocument();
     
-    // Wait for async action to finish to prevent test leaks
     await waitFor(() => {
       expect(screen.queryByText(/loading scorecards\.\.\./i)).not.toBeInTheDocument();
     });
@@ -89,28 +86,25 @@ describe('VendorScorecardPage', () => {
   it('fetches scorecard data from Supabase and renders rows correctly with ranks', async () => {
     render(<VendorScorecardPage />);
 
-    // Check query setup
+
     expect(fromMock).toHaveBeenCalledWith('vendor_scorecards');
     expect(selectMock).toHaveBeenCalledWith('*');
     expect(orderMock).toHaveBeenCalledWith('accuracy_rate', { ascending: false });
 
-    // Wait for data render
     await waitFor(() => {
       expect(screen.getByText('Apex Industrial')).toBeInTheDocument();
     });
 
-    // Check ranks and vendor codes
+
     expect(screen.getByText('#1')).toBeInTheDocument();
     expect(screen.getByText('(APEX-01)')).toBeInTheDocument();
     expect(screen.getByText('Branded Logistics')).toBeInTheDocument();
     expect(screen.getByText('Core Supply')).toBeInTheDocument();
 
-    // Check numbers/metrics
     expect(screen.getByText('20')).toBeInTheDocument();
     expect(screen.getByText('19')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
 
-    // Check badges for accuracy rates based on thresholds
     expect(screen.getByText('96.5%')).toHaveClass('bg-emerald-100 text-emerald-800');
     expect(screen.getByText('85%')).toHaveClass('bg-amber-100 text-amber-800');
     expect(screen.getByText('75%')).toHaveClass('bg-rose-100 text-rose-800');
