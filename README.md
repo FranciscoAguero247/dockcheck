@@ -34,6 +34,11 @@ Having spent nearly three years on the dock managing inbound freight under tight
 ### Key Features
 - **Inbound Scheduling & Auditing:** Provides complete data portability for inbound scheduling and auditing, allowing teams to seamlessly export manifest data for external reporting.
 
+## What I Would Build Next
+
+* **Offline Support & Optimistic UI for Warehouse Dead Zones:** Dock environments frequently experience Wi-Fi blind spots inside steel trailers and deep receiving bays. I would implement an IndexedDB-backed local queue using Service Workers so receivers can scan items, upload discrepancy photos, and log counts completely offline, automatically syncing state once connectivity is restored.
+* **Barcode & Scanner Hardware Integration:** Native support for Bluetooth and handheld Zebra/Honeywell barcode scanners via Keyboard Event Listeners for rapid SKU lookup during line-by-line verification.
+
 ## Schema overview
 
 The data model is designed around four core tables:
@@ -69,30 +74,27 @@ Supervisor demo login credentials:
    ```bash
    npm install
    ```
-2. Run tests:
-   ```bash
-   npm test
-   ```
-3. Run linting:
-   ```bash
-   npm run lint
-   ```
-4. Create a production build:
-   ```bash
-   npm run build
-   ```
-5. Create a Supabase project and add the following environment variables to `.env.local`:
+2. Configure Environment Variables:
+   
+   Create a ```.env.local``` file with your Supabase credentials:
    ```bash
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
-6. Apply the schema from [scripts/schema.sql](scripts/schema.sql) in the Supabase SQL editor.
-7. Seed the data:
+4. Apply Database Schema:
+   
+   Apply the SQL script located at ```scripts/schema.sql``` inside your Supabase SQL Editor.
+6. Seed Initial Data:
    ```bash
    node scripts/seed.mjs
    ```
-8. Start the app:
+7. Run Tests & Liniting:
+   ```bash
+   npm test
+   npm run lint
+   ```
+8. Start Development Server:
    ```bash
    npm run dev
    ```
@@ -103,17 +105,7 @@ Supervisor demo login credentials:
 
 1. Push this repository to GitHub.
 2. Import the repository into Vercel.
-3. Add the same Supabase environment variables in the Vercel project settings.
+3. Add the same Supabase environment variables in the Vercel project settings (```NEXT_PUBLIC_SUPABASE_URL```, ```NEXT_PUBLIC_SUPABASE_ANON_KEY```, and ```SUPABASE_SERVICE_ROLE_KEY```).
 4. Deploy and visit the generated URL.
-
-### Environment variables
-
-Set these in Vercel or your deployment environment:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
-```
 
 A template is available in [.env.example](.env.example).
