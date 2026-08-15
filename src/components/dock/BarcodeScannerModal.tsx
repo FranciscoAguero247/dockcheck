@@ -26,10 +26,7 @@ export function BarcodeScannerModal({
     }
 
     useEffect(() => {
-        if (!isOpen) {
-            setError(null);
-            return;
-        }
+        if (!isOpen) return;
 
         let stream: MediaStream | null = null;
         let animationFrameId: number;
@@ -56,48 +53,47 @@ export function BarcodeScannerModal({
                     
                     if(BarcodeDetectorClass){
                         const barcodeDetector = new BarcodeDetectorClass({
-                        formats: ['code_128', 'qr_code', 'ean_13', 'code_39', 'upc_a']
-                    });
+                            formats: ['code_128', 'qr_code', 'ean_13', 'code_39', 'upc_a']
+                        });
 
+                        const detectCode = async () => {
+                            if (!isMounted) return;
 
-                    const detectCode = async () => {
-                        if (!isMounted) return;
-
-                        if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
-                            try {
-                                const barcodes = await barcodeDetector.detect(videoRef.current);
-                                if (barcodes.length > 0 && isMounted) {
-                                    const scannedValue = barcodes[0].rawValue;
-                                    console.log('Scanned:', scannedValue);
-                                    
-                                    if (onScan) {
-                                        onScan(scannedValue);
-                                    } else {
-                                        router.push(`/shipments/${encodeURIComponent(scannedValue)}`);
+                            if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+                                try {
+                                    const barcodes = await barcodeDetector.detect(videoRef.current);
+                                    if (barcodes.length > 0 && isMounted) {
+                                        const scannedValue = barcodes[0].rawValue;
+                                        console.log('Scanned:', scannedValue);
+                                        
+                                        if (onScan) {
+                                            onScan(scannedValue);
+                                        } else {
+                                            router.push(`/shipments/${encodeURIComponent(scannedValue)}`);
+                                        }
+                                        
+                                        onClose();
+                                        return;
                                     }
-                                    
-                                    onClose();
-                                    return;
-                                }
-                            } catch (err: unknown) {
-                                if (err instanceof Error) {
-                                    if (err.name !== 'InvalidStateError' && err.name !== 'NotSupportedError') {
+                                } catch (err: unknown) {
+                                    if (err instanceof Error) {
+                                        if (err.name !== 'InvalidStateError' && err.name !== 'NotSupportedError') {
+                                            console.error('Unexpected barcode detection error:', err);
+                                        }
+                                    } else {
                                         console.error('Unexpected barcode detection error:', err);
                                     }
-                                } else {
-                                    console.error('Unexpected barcode detection error:', err);
                                 }
                             }
-                        }
-                        animationFrameId = requestAnimationFrame(detectCode);
-                    };
+                            animationFrameId = requestAnimationFrame(detectCode);
+                        };
 
-                    detectCode();
-                } else {
-                    console.warn('BarcodeDetector API is not supported in this browser.');
+                        detectCode();
+                    } else {
+                        console.warn('BarcodeDetector API is not supported in this browser.');
+                    }
                 }
-            }
-            } catch (err) {
+            } catch {
                 if (isMounted) {
                     setError('Camera permission denied or device camera unavailable.');
                 }
@@ -120,7 +116,7 @@ export function BarcodeScannerModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
                 <button
                     onClick={onClose}
